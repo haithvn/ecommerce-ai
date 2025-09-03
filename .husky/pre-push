@@ -1,5 +1,13 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-echo "Running tests before push…"
+# --- Add Node.js to PATH for Git hooks on Windows ---
+# Nếu Node nằm ở đường khác, sửa lại cho đúng
+if command -v cygpath >/dev/null 2>&1; then
+  # Git Bash path style
+  export PATH="/c/Program Files/nodejs:$PATH"
+fi
+# ----------------------------------------------------
+
+echo "Running tests before commit…"
 npm test || exit 1
