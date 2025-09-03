@@ -1,17 +1,28 @@
 {
-    "compilerOptions": {
-      "target": "ES2020",
-      "module": "commonjs",
-      "moduleResolution": "node",
-      "rootDir": "src",
-      "outDir": "dist",
-      "strict": true,
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true,
-      "resolveJsonModule": true,
-      "skipLibCheck": true
-    },
-    "include": ["src", "tests"],
-    "exclude": ["node_modules", "dist", ".next"]
-  }
-  
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "rootDir": ".",                       // hoặc "src" nếu bạn đổi include cụ thể
+    "outDir": "dist",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/server.ts",
+    "src/routes/**/*.ts",
+    "src/db.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".next",
+    "tests",
+    "src/app/**",        // ⬅️ loại App Router (Next)
+    "src/pages/**",      // ⬅️ nếu có Pages Router
+    "**/*.tsx"           // ⬅️ đề phòng file TSX lọt vào
+  ]
+}
