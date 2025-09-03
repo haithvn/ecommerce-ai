@@ -1,0 +1,4 @@
+
+npm run start:mcp
+
+npm run start:mcp
