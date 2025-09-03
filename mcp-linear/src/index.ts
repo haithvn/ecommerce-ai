@@ -131,9 +131,22 @@ server.registerTool(
     }
   },
   async ({ identifier, title, description, stateId }) => {
-    const q1 = `query($id:String!){ issue(identifier:$id){ id } }`;
-    const d1 = await gql(q1, { id: identifier });
-    const issueId = d1.issue?.id;
+    const [teamKey, numStr] = identifier.split("-");
+    const number = Number(numStr);
+    if (!teamKey || !number) {
+      throw new Error(`Invalid identifier format: ${identifier}. Expected TEAM-123`);
+    }
+    const q1 = `
+      query($key:String!, $number:Float!){
+        issues(
+          filter:{ team:{ key:{ eq:$key } }, number:{ eq:$number } },
+          first:1
+        ){
+          nodes{ id }
+        }
+      }`;
+    const d1 = await gql(q1, { key: teamKey, number });
+    const issueId = d1.issues?.nodes?.[0]?.id;
     if (!issueId) throw new Error(`Issue not found: ${identifier}`);
 
     const q2 = `
