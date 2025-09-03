@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS category (
+  id BIGSERIAL PRIMARY KEY,
+  code VARCHAR(64) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  status CHAR(1) NOT NULL DEFAULT 'A',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- seed dev
+INSERT INTO category (code, name, status) VALUES
+('MAC', 'Makeup', 'A')
+ON CONFLICT (code) DO NOTHING;
+
+INSERT INTO category (code, name, status) VALUES
+('IP', 'iPhone', 'A')
+ON CONFLICT (code) DO NOTHING;
