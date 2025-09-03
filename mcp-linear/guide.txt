@@ -1,4 +1,8 @@
 
-npm run start:mcp
+npm --prefix mcp-linear run build  
 
 npm run start:mcp
+
+
+issue → code → test → PR → review → merge → Done với CI chuẩn cho Next+Express
+

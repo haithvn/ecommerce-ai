@@ -13,7 +13,8 @@
     "start:api": "node dist/server.js",
     "start": "concurrently -n WEB,API -c green,blue \"npm:start:web\" \"npm:start:api\"",
     "lint": "eslint",
-    "test": "cross-env NODE_ENV=test jest --runInBand"
+    "test": "cross-env NODE_ENV=test jest --runInBand",
+    "prepare": "husky"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
@@ -36,6 +37,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^9.14.0",
     "eslint-config-next": "15.5.2",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "postcss": "^8.5.6",
     "supertest": "^6.3.4",
