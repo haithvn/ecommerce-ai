@@ -59,18 +59,28 @@ server.registerTool(
 server.registerTool(
   "linearGetIssue",
   {
-    description: "Get issue by identifier",
-    inputSchema: { identifier: z.string() }       // <-- shape
+    description: "Get issue by identifier (e.g. TEAM-123)",
+    inputSchema: { identifier: z.string() }
   },
   async ({ identifier }) => {
+    const [teamKey, numStr] = identifier.split("-");
+    const number = Number(numStr);
+    if (!teamKey || !number) {
+      throw new Error(`Invalid identifier format: ${identifier}. Expected TEAM-123`);
+    }
     const q = `
-      query($id:String!){
-        issue(identifier:$id){
-          id identifier title description state{ name }
+      query($key:String!, $number:Float!){
+        issues(
+          filter:{ team:{ key:{ eq:$key } }, number:{ eq:$number } },
+          first:1
+        ){
+          nodes{ id identifier title description state{ name } }
         }
       }`;
-    const data = await gql(q, { id: identifier });
-    return { content: [{ type: "text", text: JSON.stringify(data.issue, null, 2) }] };
+    const data = await gql(q, { key: teamKey, number });
+    const issue = data.issues?.nodes?.[0] ?? null;
+    if (!issue) throw new Error(`Issue not found: ${identifier}`);
+    return { content: [{ type: "text", text: JSON.stringify(issue, null, 2) }] };
   }
 );
 
@@ -86,10 +96,16 @@ server.registerTool(
     }
   },
   async ({ teamKey, title, description }) => {
-    const q1 = `query($key:String!){ team(key:$key){ id name key } }`;
+    const q1 = `
+      query($key:String!){
+        teams(first:1, filter:{ key:{ eq:$key } }){
+          nodes{ id name key }
+        }
+      }`;
     const d1 = await gql(q1, { key: teamKey });
-    if (!d1.team?.id) throw new Error(`Team not found for key=${teamKey}`);
-    const teamId = d1.team.id;
+    const team = d1.teams?.nodes?.[0];
+    if (!team?.id) throw new Error(`Team not found for key=${teamKey}`);
+    const teamId = team.id;
 
     const q2 = `
       mutation($teamId:String!, $title:String!, $description:String){
