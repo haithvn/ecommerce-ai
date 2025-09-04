@@ -6,3 +6,23 @@ npm run start:mcp
 
 issue → code → test → PR → review → merge → Done với CI chuẩn cho Next+Express
 
+
+
+
+Tổng flow (sau khi setup xong)
+
+Trong Cursor: @linear.start_issue { "issueKey": "MEL-123" }
+→ đổi trạng thái In Progress, tạo branch mel-123-add-api-categories, tạo TASK.md, stub file.
+
+Dev mở TASK.md, để Cursor generate code/test theo issue spec (bạn duyệt/chỉnh).
+
+git add . && git commit -m "MEL-123: implement /api/categories + tests" && git push -u origin mel-123-add-api-categories
+
+PR tự mở (workflow open-pr.yml).
+
+Tech Lead review/approve (có thể tự gán reviewer qua CODEOWNERS).
+Nếu bạn dùng label automerge, workflow sẽ bật auto-merge khi CI xanh + đủ approvals.
+
+PR merge → workflow linear-sync.yml tự cập nhật Linear về Done + comment link PR.
+
+Bạn chỉ còn: chọn issue → code → commit. Còn lại: mở PR, kiểm tra CI, auto-merge, sync Linear đều tự chạy.
