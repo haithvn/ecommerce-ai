@@ -1,9 +1,22 @@
-name: CI
+# name: CI
+
+# on:
+#   pull_request:
+#   push:
+#     branches: [ main, "mel-**" ]
 
 on:
   pull_request:
+    branches:
+      - main        # hoặc develop, tuỳ base branch bạn merge vào
   push:
-    branches: [ main, "mel-**" ]
+    branches:
+      - main        # chỉ chạy khi code đã merge vào main (tuỳ chọn)
+
+# (tuỳ chọn) chống chạy trùng nếu force-push/synchronize liên tục
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
