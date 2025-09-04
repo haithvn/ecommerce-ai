@@ -2,6 +2,10 @@
 
 # dependencies
 /node_modules
+/mcp-linear/node_modules
+.cursor/mcp.json
+.env
+.env.*
 /.pnp
 .pnp.*
 .yarn/*
@@ -39,3 +43,4 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env

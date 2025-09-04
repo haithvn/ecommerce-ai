@@ -1,0 +1,49 @@
+# name: CI
+
+# on:
+#   pull_request:
+#   push:
+#     branches: [ main, "mel-**" ]
+
+on:
+  pull_request:
+    branches:
+      - main        # hoặc develop, tuỳ base branch bạn merge vào
+  push:
+    branches:
+      - main        # chỉ chạy khi code đã merge vào main (tuỳ chọn)
+
+# (tuỳ chọn) chống chạy trùng nếu force-push/synchronize liên tục
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20] # hoặc 22 LTS nếu bạn dùng
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      # FE (Next)
+      - name: Build web
+        run: npm run build:web
+
+      # API (Express) — chỉ build src server
+      - name: Build api
+        run: npm run build:api
+
+      # Test (Jest + ts-jest), mock DB nên không cần Postgres service
+      - name: Test
+        run: npm test

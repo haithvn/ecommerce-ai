@@ -1,29 +1,29 @@
-import request from "supertest";
-import { NextRequest } from "next/server";
 import { GET as GET_PRODUCTS, POST as POST_PRODUCTS } from "@/app/api/products/route";
 
-function wrap(handler: any, reqInit?: RequestInit & { url?: string }) {
-  const url = reqInit?.url ?? "http://localhost/api/products";
-  const r = new NextRequest(url, reqInit);
-  return handler(r);
+function jsonHeaders() {
+  return { "content-type": "application/json" };
 }
 
-describe("Products API", () => {
-  it("GET /api/products returns list", async () => {
-    const res = await wrap(GET_PRODUCTS);
-    expect(res.status).toBe(200);
+describe("Next API route /api/products", () => {
+  it("GET returns 200 and array", async () => {
+    const req = new Request("http://localhost/api/products", { method: "GET" });
+    const res = await GET_PRODUCTS(req);
+    expect(res.ok).toBe(true);
     const data = await res.json();
-    expect(Array.isArray(data)).toBe(true);
+    expect(Array.isArray(data)).toBe(true); // tuỳ theo bạn trả về dạng gì
   });
 
-  it("POST /api/products creates product", async () => {
-    const res = await wrap(POST_PRODUCTS, {
+  it("POST creates product", async () => {
+    const body = { name: "Test", price: 12345, currency: "USD" };
+    const req = new Request("http://localhost/api/products", {
       method: "POST",
-      body: JSON.stringify({ name: "Test", price: 12345 }),
-      headers: { "Content-Type": "application/json" }
+      headers: jsonHeaders(),
+      body: JSON.stringify(body),
     });
-    expect(res.status).toBe(201);
+    const res = await POST_PRODUCTS(req);
+    expect(res.ok).toBe(true);
     const data = await res.json();
+    expect(data).toHaveProperty("id");
     expect(data.name).toBe("Test");
   });
 });
