@@ -26,3 +26,17 @@ Nếu bạn dùng label automerge, workflow sẽ bật auto-merge khi CI xanh + 
 PR merge → workflow linear-sync.yml tự cập nhật Linear về Done + comment link PR.
 
 Bạn chỉ còn: chọn issue → code → commit. Còn lại: mở PR, kiểm tra CI, auto-merge, sync Linear đều tự chạy.
+
+
+
+
+
+
+
+
+
+*git command not change:
+    git commit --allow-empty -m "trigger open-pr"
+
+    
+
