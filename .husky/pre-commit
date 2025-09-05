@@ -9,5 +9,12 @@ if command -v cygpath >/dev/null 2>&1; then
 fi
 # ----------------------------------------------------
 
+REQ="v22"
+CUR="$(node -v)"
+case "$CUR" in
+  $REQ*) ;; # ok
+  *) echo "❌ Requires Node $REQ.x (current $CUR)"; exit 1;;
+esac
+
 echo "Running tests before commit…"
 npm test || exit 1
