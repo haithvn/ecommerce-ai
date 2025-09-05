@@ -1,7 +1,12 @@
-name: Enable Auto-Merge
-on:
+name: enable-auto-merge
+"on":
   pull_request:
-    types: [opened, reopened, synchronize, labeled, ready_for_review]
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - labeled
+      - ready_for_review
 
 permissions:
   contents: write
@@ -9,32 +14,39 @@ permissions:
 
 jobs:
   enable:
-    if: startsWith(github.head_ref, 'mel-') || contains(github.event.pull_request.labels.*.name, 'automerge')
     runs-on: ubuntu-latest
     steps:
-      - name: Try REST: enable auto-merge (squash)
-        id: rest
-        uses: actions/github-script@v7
-        continue-on-error: true
-        with:
-          script: |
-            const pr = context.payload.pull_request;
-            const resp = await github.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/auto_merge', {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number,
-              merge_method: 'squash'
-            });
-            core.notice(`REST enabled auto-merge for #${pr.number} (status ${resp.status})`);
-
-      - name: Fallback GraphQL if REST failed
-        if: steps.rest.outcome == 'failure'
+      - name: enable auto-merge
         uses: actions/github-script@v7
         with:
           script: |
             const pr = context.payload.pull_request;
+            if (!pr) { core.setFailed('No pull_request in context'); return; }
 
-            // Lấy node_id của PR (GraphQL cần ID kiểu node)
+            // Điều kiện bật auto-merge: nhánh bắt đầu "mel-" HOẶC có label "automerge"
+            const head = pr.head?.ref ?? '';
+            const labels = (pr.labels ?? []).map(l => l?.name ?? '');
+            const shouldEnable = head.startsWith('mel-') || labels.includes('automerge');
+            if (!shouldEnable) {
+              core.info(`Skip enable: head=${head} labels=[${labels.join(',')}]`);
+              return;
+            }
+
+            // Thử REST trước
+            try {
+              await github.request('PUT /repos/{owner}/{repo}/pulls/{pull_number}/auto_merge', {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                merge_method: 'squash'
+              });
+              core.notice(`REST enabled auto-merge for #${pr.number}`);
+              return;
+            } catch (e) {
+              core.warning(`REST failed: ${e.message}. Fallback to GraphQL...`);
+            }
+
+            // Fallback GraphQL
             const { data } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -42,14 +54,10 @@ jobs:
             });
             const nodeId = data.node_id;
 
-            // Bật auto-merge qua GraphQL
-            const res = await github.graphql(
-              `mutation($pullRequestId:ID!, $mergeMethod:PullRequestMergeMethod!){
-                 enablePullRequestAutoMerge(input:{
-                   pullRequestId: $pullRequestId,
-                   mergeMethod: $mergeMethod
-                 }) { clientMutationId }
+            await github.graphql(
+              `mutation($id:ID!,$method:PullRequestMergeMethod!){
+                 enablePullRequestAutoMerge(input:{pullRequestId:$id, mergeMethod:$method}){ clientMutationId }
                }`,
-              { pullRequestId: nodeId, mergeMethod: 'SQUASH' }
+              { id: nodeId, method: 'SQUASH' }
             );
             core.notice(`GraphQL enabled auto-merge for #${pr.number}`);
